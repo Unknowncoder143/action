@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Jobs Board</title>
+</head>
+<body>
+
+<h1>Jobs Board</h1>
+
+<p>
+Submit a job:
+<a href="https://github.com/Unknowncoder143/action/issues/new?title=New+Job&body=Job+Title:%0ALocation:">
+Create Job
+</a>
+</p>
+
+<div id="jobs"></div>
+
+<script>
+async function loadJobs() {
+  const res = await fetch("data.json?t=" + Date.now());
+  const jobs = await res.json();
+
+  let html = "";
+
+  jobs.forEach(job => {
+    html += `
+      <div>
+        <h3>${job.title}</h3>
+        <p>${job.location}</p>
+        <hr>
+      </div>
+    `;
+  });
+
+  document.getElementById("jobs").innerHTML = html;
+}
+
+loadJobs();
+setInterval(loadJobs, 5000);
+</script>
+
+</body>
+</html>
