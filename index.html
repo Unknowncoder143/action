@@ -3,52 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <title>Jobs Board</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+input, button {
+  padding: 10px;
+  margin: 5px 0;
+  width: 100%;
+}
+
+.job {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-top: 10px;
+}
+</style>
+
 </head>
 <body>
 
 <h1>Jobs Board</h1>
 
+<!-- FORM -->
 <form id="jobForm">
   <input type="text" id="title" placeholder="Job Title" required>
   <input type="text" id="location" placeholder="Location" required>
-  <button type="submit">Submit</button>
+  <button type="submit">Submit Job</button>
 </form>
 
 <hr>
 
+<h2>All Jobs</h2>
 <div id="jobs"></div>
 
 <script>
-const jobs = [];
-
+// ======================
+// SEND FORM TO GITHUB ISSUE
+// ======================
 document.getElementById("jobForm").addEventListener("submit", function(e) {
   e.preventDefault();
 
-  jobs.push({
-    title: document.getElementById("title").value,
-    location: document.getElementById("location").value
-  });
+  const title = document.getElementById("title").value;
+  const location = document.getElementById("location").value;
 
-  displayJobs();
+  const issueURL =
+    "https://github.com/Unknowncoder143/action/issues/new" +
+    "?title=" + encodeURIComponent("New Job") +
+    "&body=" + encodeURIComponent(
+      "Job Title: " + title + "\nLocation: " + location
+    );
+
+  window.open(issueURL, "_blank");
+
   this.reset();
 });
 
-function displayJobs() {
-  let html = "";
 
-  jobs.forEach(job => {
-    html += `
-      <div>
-        <h3>${job.title}</h3>
-        <p>${job.location}</p>
-        <hr>
-      </div>
-    `;
-  });
+// ======================
+// LOAD DATA FROM data.json
+// ======================
+async function loadJobs() {
+  try {
+    const res = await fetch("data.json?t=" + new Date().getTime());
+    const jobs = await res.json();
 
-  document.getElementById("jobs").innerHTML = html;
+    let html = "";
+
+    jobs.forEach(job => {
+      html += `
+        <div class="job">
+          <h3>${job.title}</h3>
+          <p><b>Location:</b> ${job.location}</p>
+          <small>${job.time || ""}</small>
+        </div>
+      `;
+    });
+
+    document.getElementById("jobs").innerHTML = html;
+
+  } catch (err) {
+    document.getElementById("jobs").innerHTML =
+      "<p>No data.json found or not updated yet.</p>";
+  }
 }
+
+loadJobs();
+setInterval(loadJobs, 5000);
 </script>
 
 </body>
-</html> yaml file for this
+</html>
