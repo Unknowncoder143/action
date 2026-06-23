@@ -8,20 +8,32 @@
 
 <h1>Jobs Board</h1>
 
-<p>
-Submit a job:
-<a href="https://github.com/Unknowncoder143/action/issues/new?title=New+Job&body=Job+Title:%0ALocation:">
-Create Job
-</a>
-</p>
+<form id="jobForm">
+  <input type="text" id="title" placeholder="Job Title" required>
+  <input type="text" id="location" placeholder="Location" required>
+  <button type="submit">Submit</button>
+</form>
+
+<hr>
 
 <div id="jobs"></div>
 
 <script>
-async function loadJobs() {
-  const res = await fetch("data.json?t=" + Date.now());
-  const jobs = await res.json();
+const jobs = [];
 
+document.getElementById("jobForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  jobs.push({
+    title: document.getElementById("title").value,
+    location: document.getElementById("location").value
+  });
+
+  displayJobs();
+  this.reset();
+});
+
+function displayJobs() {
   let html = "";
 
   jobs.forEach(job => {
@@ -36,9 +48,6 @@ async function loadJobs() {
 
   document.getElementById("jobs").innerHTML = html;
 }
-
-loadJobs();
-setInterval(loadJobs, 5000);
 </script>
 
 </body>
