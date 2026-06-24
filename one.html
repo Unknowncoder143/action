@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Jobs Board</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+}
+
+input,button{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  box-sizing:border-box;
+}
+
+button{
+  cursor:pointer;
+}
+
+.job{
+  border:1px solid #ddd;
+  padding:15px;
+  margin-top:10px;
+  border-radius:5px;
+}
+
+.error{
+  color:red;
+}
+</style>
+
+</head>
+<body>
+
+<h1>Jobs Board</h1>
+
+<form id="jobForm">
+
+<input
+type="text"
+id="title"
+placeholder="Job Title"
+required
+
+>
+
+<input
+type="text"
+id="location"
+placeholder="Location"
+required
+
+>
+
+  <button type="submit">
+    Submit Job
+  </button>
+
+</form>
+
+<hr>
+
+<h2>Available Jobs</h2>
+
+<div id="jobs">
+Loading jobs...
+</div>
+
+<script>
+
+document
+.getElementById("jobForm")
+.addEventListener("submit", function(e){
+
+  e.preventDefault();
+
+  const title =
+    document.getElementById("title").value;
+
+  const location =
+    document.getElementById("location").value;
+
+  const issueURL =
+    "https://github.com/Unknowncoder143/action/issues/new" +
+    "?title=" +
+    encodeURIComponent("New Job") +
+    "&body=" +
+    encodeURIComponent(
+      "Job Title: " +
+      title +
+      "\nLocation: " +
+      location
+    );
+
+  window.open(issueURL, "_blank");
+
+  this.reset();
+
+});
+
+async function loadJobs(){
+
+  try{
+
+    const response =
+      await fetch(
+        "./data.json?t=" + Date.now()
+      );
+
+    if(!response.ok){
+      throw new Error(
+        "Failed to load data.json"
+      );
+    }
+
+    const jobs =
+      await response.json();
+
+    console.log("Loaded jobs:", jobs);
+
+    let html = "";
+
+    if(!Array.isArray(jobs) ||
+       jobs.length === 0){
+
+      html =
+        "<p>No jobs available.</p>";
+
+    }else{
+
+      jobs.reverse().forEach(job => {
+
+        html += `
+          <div class="job">
+
+            <h3>
+              ${job.title || "No Title"}
+            </h3>
+
+            <p>
+              <strong>Location:</strong>
+              ${job.location || ""}
+            </p>
+
+            <p>
+              <strong>Created:</strong>
+              ${job.created || ""}
+            </p>
+
+          </div>
+        `;
+
+      });
+
+    }
+
+    document.getElementById("jobs")
+      .innerHTML = html;
+
+  }
+  catch(error){
+
+    console.error(error);
+
+    document.getElementById("jobs")
+      .innerHTML =
+      "<p class='error'>Unable to load data.json</p>";
+
+  }
+
+}
+
+loadJobs();
+
+setInterval(loadJobs, 5000);
+
+</script>
+
+</body>
+</html>
