@@ -1,53 +1,59 @@
 name: Cleanup Data
 
 on:
-  schedule:
-    - cron: "*/5 * * * *"
-  workflow_dispatch:
+schedule:
+- cron: "0 * * * *"
+workflow_dispatch:
 
 permissions:
-  contents: write
+contents: write
 
 jobs:
-  cleanup:
-    runs-on: ubuntu-latest
+cleanup:
+runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+```
+steps:
+  - name: Checkout Repository
+    uses: actions/checkout@v4
 
-      - name: Remove entries older than 5 minutes
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
+  - name: Remove entries older than 1 day
+    uses: actions/github-script@v7
+    with:
+      script: |
+        const fs = require('fs');
 
-            let data = [];
+        let data = [];
 
-            try {
-              data = JSON.parse(fs.readFileSync('data.json', 'utf8'));
-            } catch {}
+        try {
+          data = JSON.parse(
+            fs.readFileSync('data.json', 'utf8')
+          );
+        } catch (e) {
+          console.log('data.json not found');
+        }
 
-            const now = Date.now();
-            const FIVE_MINUTES = 5 * 60 * 1000;
+        const now = Date.now();
+        const ONE_DAY = 24 * 60 * 60 * 1000;
 
-            data = data.filter(item => {
-              if (!item.created) return false;
+        data = data.filter(item => {
+          if (!item.created) return false;
 
-              const age =
-                now - new Date(item.created).getTime();
+          const age =
+            now - new Date(item.created).getTime();
 
-              return age < FIVE_MINUTES;
-            });
+          return age < ONE_DAY;
+        });
 
-            fs.writeFileSync(
-              'data.json',
-              JSON.stringify(data, null, 2)
-            );
+        fs.writeFileSync(
+          'data.json',
+          JSON.stringify(data, null, 2)
+        );
 
-      - name: Commit changes
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add data.json
-          git commit -m "Cleanup old entries" || exit 0
-          git push
+  - name: Commit Changes
+    run: |
+      git config user.name github-actions
+      git config user.email github-actions@github.com
+      git add data.json
+      git commit -m "Cleanup expired jobs" || exit 0
+      git push
