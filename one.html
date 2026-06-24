@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jobs Board</title>
 
 <style>
@@ -17,26 +18,15 @@ h1{
   text-align:center;
 }
 
-input,button{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  box-sizing:border-box;
-}
-
-button{
-  cursor:pointer;
-}
-
 .job{
-  border:1px solid #ddd;
+  border:1px solid #ccc;
+  border-radius:8px;
   padding:15px;
-  margin-top:10px;
-  border-radius:5px;
+  margin:10px 0;
 }
 
-.error{
-  color:red;
+.loading{
+  text-align:center;
 }
 </style>
 
@@ -45,101 +35,38 @@ button{
 
 <h1>Jobs Board</h1>
 
-<form id="jobForm">
-
-<input
-type="text"
-id="title"
-placeholder="Job Title"
-required
-
->
-
-<input
-type="text"
-id="location"
-placeholder="Location"
-required
-
->
-
-  <button type="submit">
-    Submit Job
-  </button>
-
-</form>
-
-<hr>
-
-<h2>Available Jobs</h2>
-
-<div id="jobs">
+<div id="jobs" class="loading">
 Loading jobs...
 </div>
 
 <script>
 
-document
-.getElementById("jobForm")
-.addEventListener("submit", function(e){
+async function loadJobs() {
 
-  e.preventDefault();
+  try {
 
-  const title =
-    document.getElementById("title").value;
-
-  const location =
-    document.getElementById("location").value;
-
-  const issueURL =
-    "https://github.com/Unknowncoder143/action/issues/new" +
-    "?title=" +
-    encodeURIComponent("New Job") +
-    "&body=" +
-    encodeURIComponent(
-      "Job Title: " +
-      title +
-      "\nLocation: " +
-      location
+    const response = await fetch(
+      "./data.json?t=" + Date.now()
     );
 
-  window.open(issueURL, "_blank");
-
-  this.reset();
-
-});
-
-async function loadJobs(){
-
-  try{
-
-    const response =
-      await fetch(
-        "./data.json?t=" + Date.now()
-      );
-
-    if(!response.ok){
+    if (!response.ok) {
       throw new Error(
         "Failed to load data.json"
       );
     }
 
-    const jobs =
-      await response.json();
-
-    console.log("Loaded jobs:", jobs);
+    const jobs = await response.json();
 
     let html = "";
 
-    if(!Array.isArray(jobs) ||
-       jobs.length === 0){
+    if (!Array.isArray(jobs) ||
+        jobs.length === 0) {
 
-      html =
-        "<p>No jobs available.</p>";
+      html = "<p>No jobs available.</p>";
 
-    }else{
+    } else {
 
-      jobs.reverse().forEach(job => {
+      jobs.forEach(job => {
 
         html += `
           <div class="job">
@@ -169,13 +96,13 @@ async function loadJobs(){
       .innerHTML = html;
 
   }
-  catch(error){
+  catch(error) {
 
     console.error(error);
 
     document.getElementById("jobs")
       .innerHTML =
-      "<p class='error'>Unable to load data.json</p>";
+      "<p>Unable to load data.json</p>";
 
   }
 
@@ -189,3 +116,4 @@ setInterval(loadJobs, 5000);
 
 </body>
 </html>
+
