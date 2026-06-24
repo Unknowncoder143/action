@@ -8,21 +8,35 @@
 <style>
 body{
   font-family:Arial,sans-serif;
-  max-width:800px;
+  max-width:900px;
   margin:auto;
   padding:20px;
 }
 
+h1{
+  text-align:center;
+}
+
 input,button{
   width:100%;
-  padding:10px;
-  margin:5px 0;
+  padding:12px;
+  margin:6px 0;
+  box-sizing:border-box;
+}
+
+button{
+  cursor:pointer;
 }
 
 .job{
-  border:1px solid #ccc;
-  padding:10px;
+  border:1px solid #ddd;
+  padding:15px;
   margin-top:10px;
+  border-radius:5px;
+}
+
+.error{
+  color:red;
 }
 </style>
 
@@ -32,12 +46,14 @@ input,button{
 <h1>Jobs Board</h1>
 
 <form id="jobForm">
-  <input
-    type="text"
-    id="title"
-    placeholder="Job Title"
-    required
-  >
+
+<input
+type="text"
+id="title"
+placeholder="Job Title"
+required
+
+>
 
 <input
 type="text"
@@ -50,6 +66,7 @@ required
   <button type="submit">
     Submit Job
   </button>
+
 </form>
 
 <hr>
@@ -57,14 +74,14 @@ required
 <h2>Available Jobs</h2>
 
 <div id="jobs">
-Loading...
+Loading jobs...
 </div>
 
 <script>
 
 document
 .getElementById("jobForm")
-.addEventListener("submit",function(e){
+.addEventListener("submit", function(e){
 
   e.preventDefault();
 
@@ -86,7 +103,7 @@ document
       location
     );
 
-  window.open(issueURL,"_blank");
+  window.open(issueURL, "_blank");
 
   this.reset();
 
@@ -98,36 +115,49 @@ async function loadJobs(){
 
     const response =
       await fetch(
-        "data.json?t=" + Date.now()
+        "./data.json?t=" + Date.now()
       );
+
+    if(!response.ok){
+      throw new Error(
+        "Failed to load data.json"
+      );
+    }
 
     const jobs =
       await response.json();
 
+    console.log("Loaded jobs:", jobs);
+
     let html = "";
 
-    if(jobs.length === 0){
+    if(!Array.isArray(jobs) ||
+       jobs.length === 0){
 
       html =
         "<p>No jobs available.</p>";
 
     }else{
 
-      jobs.forEach(job => {
+      jobs.reverse().forEach(job => {
 
         html += `
           <div class="job">
-            <h3>${job.title}</h3>
+
+            <h3>
+              ${job.title || "No Title"}
+            </h3>
 
             <p>
               <strong>Location:</strong>
-              ${job.location}
+              ${job.location || ""}
             </p>
 
             <p>
-              <strong>Posted:</strong>
+              <strong>Created:</strong>
               ${job.created || ""}
             </p>
+
           </div>
         `;
 
@@ -135,15 +165,17 @@ async function loadJobs(){
 
     }
 
-    document.getElementById("jobs").innerHTML =
-      html;
+    document.getElementById("jobs")
+      .innerHTML = html;
 
-  }catch(error){
+  }
+  catch(error){
 
     console.error(error);
 
-    document.getElementById("jobs").innerHTML =
-      "<p>Unable to load data.json</p>";
+    document.getElementById("jobs")
+      .innerHTML =
+      "<p class='error'>Unable to load data.json</p>";
 
   }
 
@@ -151,9 +183,10 @@ async function loadJobs(){
 
 loadJobs();
 
-setInterval(loadJobs,5000);
+setInterval(loadJobs, 5000);
 
 </script>
 
 </body>
 </html>
+
